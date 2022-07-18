@@ -116,10 +116,13 @@ class LocalPoseEstimator:
 
 
 class App:
-    def __init__(self, src):
+    def __init__(self, src, route_dir):
         self.cap = video.create_capture(src, presets['book'])
         self.frame = None
         self.localPoseEstimator = LocalPoseEstimator()
+
+        self.route_dir = route_dir
+        self.save_frame_num = 0
 
         cv.namedWindow('plane')
 
@@ -149,6 +152,11 @@ class App:
             ch = cv.waitKey(1)
             if ch == ord(' '):
                 self.localPoseEstimator.set_keyframe(self.frame)
+            if ch == ord('s'):
+                path = '{}frame_{}.png'.format(self.route_dir, self.save_frame_num)
+                print('save frame to {}'.format(path))
+                cv.imwrite(path, self.frame)
+                self.save_frame_num += 1
             if ch == 27:
                 break
 
@@ -160,4 +168,9 @@ if __name__ == '__main__':
         video_src = sys.argv[1]
     except:
         video_src = 0
-    App(video_src).run()
+    try:
+        route_dir = sys.argv[2]
+    except:
+        route_dir = './route_imgs/'
+
+    App(video_src, route_dir).run()
