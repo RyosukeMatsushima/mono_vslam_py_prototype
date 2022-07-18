@@ -24,6 +24,7 @@ if PY3:
     xrange = range
 
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 import cv2 as cv
 
 # built-in modules
@@ -67,6 +68,7 @@ class LocalPoseEstimator:
         self.matcher = cv.FlannBasedMatcher(flann_params, {})  # bug : need to pass empty dict (#1329)
         self.keyframe_data = None
     def set_keyframe(self, frame):
+        self.matcher.clear()
         raw_points, raw_descrs = self.detect_features(frame)
         points, descs = [], []
         for kp, desc in zip(raw_points, raw_descrs):
@@ -134,7 +136,14 @@ class App:
             vis = self.frame.copy()
             p2k = self.localPoseEstimator.get_pose(self.frame)
             if p2k:
-                print(p2k.pose)
+                r = R.from_matrix(p2k.pose[0])
+                print('')
+                print(r.as_euler('zyx', degrees=True))
+                print(p2k.pose[1])
+
+                for (x0, y0), (x1, y1) in zip(np.int32(p2k.p0), np.int32(p2k.p1)):
+                    cv.circle(vis, (x1, y1), 2, (255, 255, 255))
+                    cv.line(vis, (x0, y0), (x1, y1), (255, 255, 255))
 
             cv.imshow('plane', vis)
             ch = cv.waitKey(1)
