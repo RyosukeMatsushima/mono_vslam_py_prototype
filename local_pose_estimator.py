@@ -30,11 +30,6 @@ import cv2 as cv
 # built-in modules
 from collections import namedtuple
 
-# local modules
-import video
-import common
-from video import presets
-
 FLANN_INDEX_LSH    = 6
 flann_params= dict(algorithm = FLANN_INDEX_LSH,
                    table_number = 6, # 12
@@ -58,7 +53,7 @@ KeyframeData = namedtuple('KeyframeData', 'image, keypoints, descrs')
   p1     - matched points coords in input frame
   H      - homography matrix from p0 to p1
 '''
-PoseToKeyframe = namedtuple('PoseToKeyframe', 'pose, p0, p1')
+PoseToKeyframe = namedtuple('PoseToKeyframe', 'pose, p0, p1, is_close')
 
 
 class LocalPoseEstimator:
@@ -96,7 +91,7 @@ class LocalPoseEstimator:
 
         R, t, F = self.get_R_t_from_2d_points(p0, p1, 1000)
 
-        p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1)
+        p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1, is_close=self.is_close(p0, p1))
         return p2k
 
     def get_R_t_from_2d_points(self, pts1, pts2, focal):
@@ -106,6 +101,16 @@ class LocalPoseEstimator:
         retval, R, t, mask = cv.recoverPose(F, pts1, pts2, focal=focal);
         return R, t, F
 
+    def is_close(self, p0, p1):
+
+        p0 = np.array(p0)
+        p1 = np.array(p1)
+
+        d_list = np.linalg.norm(p0 - p1, axis=1)
+
+        return np.sort(d_list)[MIN_MATCH_COUNT] < 4.0
+
+
 
     def detect_features(self, frame):
         '''detect_features(self, frame) -> keypoints, descrs'''
@@ -114,6 +119,10 @@ class LocalPoseEstimator:
             descrs = []
         return keypoints, descrs
 
+
+# local modules
+import video
+from video import presets
 
 class App:
     def __init__(self, src, route_dir):
@@ -143,6 +152,7 @@ class App:
                 print('')
                 print(r.as_euler('zyx', degrees=True))
                 print(p2k.pose[1])
+                print(p2k.is_close)
 
                 for (x0, y0), (x1, y1) in zip(np.int32(p2k.p0), np.int32(p2k.p1)):
                     cv.circle(vis, (x1, y1), 2, (255, 255, 255))
