@@ -62,6 +62,7 @@ class LocalPoseEstimator:
         self.detector = cv.ORB_create( nfeatures = 1000 )
         self.matcher = cv.FlannBasedMatcher(flann_params, {})  # bug : need to pass empty dict (#1329)
         self.keyframe_data = None
+
     def set_keyframe(self, frame):
         self.matcher.clear()
         raw_points, raw_descrs = self.detect_features(frame)
@@ -74,6 +75,9 @@ class LocalPoseEstimator:
         self.matcher.add([descs])
         self.keyframe_data = KeyframeData(image = frame, keypoints = points, descrs=descs)
         return
+
+    def did_set_keyframe(self):
+        return self.matcher.empty()
 
     def get_pose(self, frame):
         '''Returns a list of detected TrackedTarget objects'''
@@ -108,9 +112,10 @@ class LocalPoseEstimator:
 
         d_list = np.linalg.norm(p0 - p1, axis=1)
 
-        return np.sort(d_list)[MIN_MATCH_COUNT] < 4.0
+        if len(d_list) < MIN_MATCH_COUNT:
+            return False
 
-
+        return np.sort(d_list)[MIN_MATCH_COUNT - 1] < 10.0
 
     def detect_features(self, frame):
         '''detect_features(self, frame) -> keypoints, descrs'''
@@ -162,7 +167,7 @@ class App:
             ch = cv.waitKey(1)
             if ch == ord(' '):
                 self.localPoseEstimator.set_keyframe(self.frame)
-            if ch == ord('s'):
+            #if ch == ord('s'):
                 path = '{}frame_{}.png'.format(self.route_dir, self.save_frame_num)
                 print('save frame to {}'.format(path))
                 cv.imwrite(path, self.frame)
