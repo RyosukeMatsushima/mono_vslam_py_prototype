@@ -125,13 +125,9 @@ class LocalPoseEstimator:
         return keypoints, descrs
 
 
-# local modules
-import video
-from video import presets
-
 class App:
     def __init__(self, src, route_dir):
-        self.cap = video.create_capture(src, presets['book'])
+        self.cap = cv.VideoCapture(src)
         self.frame = None
         self.localPoseEstimator = LocalPoseEstimator()
 
