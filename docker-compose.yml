@@ -1,0 +1,13 @@
+version: '3'
+services:
+  mono_vslam:
+    tty: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/mono_vslam_py_prototype
+    working_dir: /mono_vslam_py_prototype
+    ports:
+      - 8000:8000
+
