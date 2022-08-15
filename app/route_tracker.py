@@ -7,7 +7,6 @@ import os
 
 from local_pose_estimator import LocalPoseEstimator
 
-
 class RouteTracker:
 
     def __init__(self, route_dir):
@@ -56,9 +55,8 @@ class App:
         self.route_dir = route_dir
         self.save_frame_num = 0
 
-        cv.namedWindow('plane')
-
-    def run(self):
+    def run(self, web=False):
+        cv_vis_images = []
         while True:
             ret, frame = self.cap.read()
             if not ret:
@@ -74,13 +72,30 @@ class App:
                     cv.circle(vis, (x1, y1), 2, (255, 255, 255))
                     cv.line(vis, (x0, y0), (x1, y1), (255, 255, 255))
 
-            cv.imshow('plane', vis)
-            ch = cv.waitKey(1)
-            if ch == 27:
-                break
-            if did_finish:
-                print('finish')
-                break
+            if web:
+                cv_vis_file_name = 'cv_vis.png'
+                cv.imwrite(cv_vis_file_name, vis)
+                cv_vis_images.append(cv.imread(cv_vis_file_name))
+                os.remove(cv_vis_file_name)
+                if len(cv_vis_images) == 30:
+                    break
+            else:
+                cv.imshow('plane', vis)
+                ch = cv.waitKey(1)
+                if ch == 27:
+                    break
+                if did_finish:
+                    print('finish')
+                    break
+
+        if web:
+            size = (640, 480)
+            fps = 10.0
+            os.makedirs('route_tracker_movies', exist_ok=True)
+            cv_vis_movie = cv.VideoWriter('route_tracker_movies/output.webm', cv.VideoWriter_fourcc(*'VP90'), fps, size)
+            for i in range(len(cv_vis_images)):
+                cv_vis_movie.write(cv_vis_images[i])
+            cv_vis_movie.release()
 
 if __name__ == '__main__':
 
@@ -95,4 +110,3 @@ if __name__ == '__main__':
         route_dir = './route_imgs/'
 
     App(video_src, route_dir).run()
-
