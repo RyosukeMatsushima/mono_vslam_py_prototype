@@ -47,7 +47,7 @@ class RouteTracker:
         self.img_num += 1
 
 class App:
-    def __init__(self, src, route_dir):
+    def __init__(self, src, route_dir, web=False):
         self.cap = cv.VideoCapture(src)
         self.frame = None
         self.routeTracker = RouteTracker(route_dir)
@@ -55,7 +55,11 @@ class App:
         self.route_dir = route_dir
         self.save_frame_num = 0
 
-    def run(self, web=False):
+        self.web = web
+        if not self.web:
+            cv.namedWindow('plane')
+
+    def run(self):
         cv_vis_images = []
         while True:
             ret, frame = self.cap.read()
@@ -72,7 +76,7 @@ class App:
                     cv.circle(vis, (x1, y1), 2, (255, 255, 255))
                     cv.line(vis, (x0, y0), (x1, y1), (255, 255, 255))
 
-            if web:
+            if self.web:
                 cv_vis_file_name = 'cv_vis.png'
                 cv.imwrite(cv_vis_file_name, vis)
                 cv_vis_images.append(cv.imread(cv_vis_file_name))
@@ -88,7 +92,7 @@ class App:
                     print('finish')
                     break
 
-        if web:
+        if self.web:
             size = (640, 480)
             fps = 10.0
             os.makedirs('route_tracker_movies', exist_ok=True)

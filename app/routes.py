@@ -13,7 +13,7 @@ def show():
     video_src = request.args.get('video', 0)
     route_dir = request.args.get('route', './route_imgs/')
     
-    route_tracker.App(video_src, route_dir).run(web=True)
+    route_tracker.App(video_src, route_dir, web=True).run()
     return render_template('show.html', video_url='route_tracker_movies/output.webm')
 
 if __name__ == '__main__':
