@@ -11,3 +11,13 @@ services:
     ports:
       - 8000:8000
 
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mono_vslam_sample
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+    ports:
+      - 3306:3306
