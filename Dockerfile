@@ -15,7 +15,7 @@ RUN pip3 install opencv-python
 RUN pip3 install Flask
 
 # DB
-RUN apt-get install -y python-dev python3-dev default-libmysqlclient-dev
+RUN apt-get install -y python3-dev default-libmysqlclient-dev
 RUN pip3 install mysqlclient
 
 RUN apt-get clean
