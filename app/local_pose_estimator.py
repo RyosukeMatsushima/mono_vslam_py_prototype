@@ -85,7 +85,7 @@ class LocalPoseEstimator:
         if len(frame_points) < MIN_MATCH_COUNT:
             return []
         matches = self.matcher.knnMatch(frame_descrs, k = 2)
-        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.75]
+        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.50]
         if len(matches) < MIN_MATCH_COUNT:
             return []
 
@@ -133,6 +133,7 @@ class App:
 
         self.route_dir = route_dir
         self.save_frame_num = 0
+        self.paused = False
 
         cv.namedWindow('plane')
 
@@ -150,16 +151,18 @@ class App:
             p2k = self.localPoseEstimator.get_pose(self.frame)
             if p2k:
                 r = R.from_matrix(p2k.pose[0])
-                print('')
-                print(r.as_euler('zyx', degrees=True))
-                print(p2k.pose[1])
-                print(p2k.is_close)
+                if not self.paused:
+                    print('')
+                    print(r.as_euler('zyx', degrees=True))
+                    print(p2k.pose[1])
+                    print(p2k.is_close)
 
                 for (x0, y0), (x1, y1) in zip(np.int32(p2k.p0), np.int32(p2k.p1)):
                     cv.circle(vis, (x1, y1), 2, (255, 255, 255))
                     cv.line(vis, (x0, y0), (x1, y1), (255, 255, 255))
 
-            cv.imshow('plane', vis)
+            if not self.paused:
+                cv.imshow('plane', vis)
             ch = cv.waitKey(1)
             if ch == ord(' '):
                 self.localPoseEstimator.set_keyframe(self.frame)
@@ -168,6 +171,8 @@ class App:
                 print('save frame to {}'.format(path))
                 cv.imwrite(path, self.frame)
                 self.save_frame_num += 1
+            if ch == ord('p'):
+                self.paused = not self.paused
             if ch == 27:
                 break
 
@@ -178,7 +183,7 @@ if __name__ == '__main__':
     try:
         video_src = sys.argv[1]
     except:
-        video_src = 0
+        video_src = 2
     try:
         route_dir = sys.argv[2]
     except:

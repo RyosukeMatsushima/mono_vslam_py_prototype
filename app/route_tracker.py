@@ -21,11 +21,32 @@ class RouteTracker:
 
         p2k = self.localPoseEstimator.get_pose(frame)
 
-        if p2k:
-            if p2k.is_close:
-                self.update_keyframe()
+        if not p2k:
+            return None
 
-        return p2k, self.did_finish
+        if p2k.is_close:
+            self.update_keyframe()
+
+        rotation = self.calculate_rotation_cmd(p2k)
+
+        return p2k, self.did_finish, rotation
+
+    def calculate_rotation_cmd(self, p2k):
+        rotation_matrix = np.array(p2k.pose[0])
+        frame_direction = rotation_matrix @ np.array([0, 0, 1])
+        keyframe_direction = np.array(p2k.pose[1]).T[0]
+
+        rotation_vector = np.cross(frame_direction, keyframe_direction)
+
+        rotation = rotation_vector[1]
+
+        print('frame_direction: {}'.format(frame_direction))
+        print('keyframe_direction: {}'.format(keyframe_direction))
+        print('rotation_vector: {}'.format(rotation_vector))
+        print('')
+
+        return rotation
+
 
     def update_keyframe(self):
         next_frame_str = '{}frame_{}.png'.format(self.img_dir, self.img_num)
@@ -58,6 +79,7 @@ class App:
         self.web = web
         if not self.web:
             cv.namedWindow('plane')
+        self.paused = False
 
     def run(self):
         cv_vis_images = []
@@ -68,13 +90,15 @@ class App:
             self.frame = frame.copy()
 
             vis = self.frame.copy()
-            p2k, did_finish = self.routeTracker.get_cmd(self.frame)
+            p2k, did_finish, _ = self.routeTracker.get_cmd(self.frame)
             if p2k:
                 r = R.from_matrix(p2k.pose[0])
 
                 for (x0, y0), (x1, y1) in zip(np.int32(p2k.p0), np.int32(p2k.p1)):
                     cv.circle(vis, (x1, y1), 2, (255, 255, 255))
                     cv.line(vis, (x0, y0), (x1, y1), (255, 255, 255))
+            else:
+                print('no p2k')
 
             if self.web:
                 cv_vis_file_name = 'cv_vis.png'
@@ -84,10 +108,15 @@ class App:
                 if len(cv_vis_images) == 30:
                     break
             else:
-                cv.imshow('plane', vis)
+                if not self.paused:
+                    if p2k:
+                        self.routeTracker.calculate_cmd(p2k)
+                    cv.imshow('plane', vis)
                 ch = cv.waitKey(1)
                 if ch == 27:
                     break
+                if ch == ord('p'):
+                    self.paused = not self.paused
                 if did_finish:
                     print('finish')
                     break
@@ -107,7 +136,7 @@ if __name__ == '__main__':
     try:
         video_src = sys.argv[1]
     except:
-        video_src = 0
+        video_src = 2
     try:
         route_dir = sys.argv[2]
     except:
