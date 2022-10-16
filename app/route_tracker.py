@@ -5,7 +5,8 @@ from scipy.spatial.transform import Rotation as R
 import cv2 as cv
 import os
 
-from local_pose_estimator import LocalPoseEstimator
+#TODO: refactor
+from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPoseEstimator
 
 class RouteTracker:
 
@@ -22,14 +23,14 @@ class RouteTracker:
         p2k = self.localPoseEstimator.get_pose(frame)
 
         if not p2k:
-            return None
+            return None, None
 
-        if p2k.is_close:
-            self.update_keyframe()
+#        if p2k.is_close:
+#            self.update_keyframe()
 
-        rotation = self.calculate_rotation_cmd(p2k)
+#        rotation = self.calculate_rotation_cmd(p2k)
 
-        return p2k, self.did_finish, rotation
+        return p2k, self.did_finish
 
     def calculate_rotation_cmd(self, p2k):
         rotation_matrix = np.array(p2k.pose[0])
