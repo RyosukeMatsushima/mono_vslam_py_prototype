@@ -44,13 +44,11 @@ class RouteTracker:
         keyframe_direction = np.array(p2k.pose[1]).T[0]
         yaw_to_keyframe = self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] )
 
-        rotation_vector = np.cross(frame_Z, keyframe_direction)
-
-        rotation = rotation_vector[1]
+        rotation = - yaw_rotation + yaw_to_keyframe
 
         print('frame_direction: {}'.format(frame_Z))
         print('keyframe_direction: {}'.format(keyframe_direction))
-        print('rotation_vector: {}'.format(rotation_vector))
+        print('rotation: {}'.format(rotation))
         print('yaw_rotation: {}'.format(yaw_rotation))
         print('yaw_to_keyframe: {}'.format(yaw_to_keyframe))
         print('')
