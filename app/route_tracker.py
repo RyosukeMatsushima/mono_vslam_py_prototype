@@ -32,18 +32,27 @@ class RouteTracker:
 
         return p2k, self.did_finish, rotation
 
+    def vector2d_to_angle(self, x, y):
+        alpha  = np.sqrt( 1 / (x**2 + y**2) )
+        sign = 1.0 if y > 0.0 else -1.0
+        return np.arccos(x * alpha) * sign
+
     def calculate_rotation_cmd(self, p2k):
         rotation_matrix = np.array(p2k.pose[0])
-        frame_direction = rotation_matrix @ np.array([0, 0, 1])
+        frame_Z = rotation_matrix @ np.array([0, 0, 1])
+        yaw_rotation = self.vector2d_to_angle(frame_Z[2], frame_Z[0])
         keyframe_direction = np.array(p2k.pose[1]).T[0]
+        yaw_to_keyframe = self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] )
 
-        rotation_vector = np.cross(frame_direction, keyframe_direction)
+        rotation_vector = np.cross(frame_Z, keyframe_direction)
 
         rotation = rotation_vector[1]
 
-        print('frame_direction: {}'.format(frame_direction))
+        print('frame_direction: {}'.format(frame_Z))
         print('keyframe_direction: {}'.format(keyframe_direction))
         print('rotation_vector: {}'.format(rotation_vector))
+        print('yaw_rotation: {}'.format(yaw_rotation))
+        print('yaw_to_keyframe: {}'.format(yaw_to_keyframe))
         print('')
 
         return rotation
