@@ -85,7 +85,7 @@ class LocalPoseEstimator:
         if len(frame_points) < MIN_MATCH_COUNT:
             return []
         matches = self.matcher.knnMatch(frame_descrs, k = 2)
-        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.50]
+        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.70]
         if len(matches) < MIN_MATCH_COUNT:
             return []
 
@@ -93,7 +93,9 @@ class LocalPoseEstimator:
         p1 = [frame_points[m.queryIdx].pt for m in matches]
         p0, p1 = np.float32((p0, p1))
 
-        R, t, F = self.get_R_t_from_2d_points(p0, p1, 1000)
+        R, t, F, p0, p1 = self.get_R_t_from_2d_points(p0, p1, 1000)
+        if len(p0) < MIN_MATCH_COUNT:
+            return []
 
         p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1, is_close=self.is_close(p0, p1))
         return p2k
@@ -102,8 +104,10 @@ class LocalPoseEstimator:
         F, mask = cv.findEssentialMat(pts1, pts2, focal=focal, pp=(0.0, 0.0), method=cv.RANSAC, prob=0.999, threshold=1.0)
         pts1 = pts1[mask.ravel()==1]
         pts2 = pts2[mask.ravel()==1]
-        retval, R, t, mask = cv.recoverPose(F, pts1, pts2, focal=focal);
-        return R, t, F
+        retval, R, t, mask = cv.recoverPose(F, pts1, pts2, focal=focal)
+        available_p1 = [ p for i, p in enumerate(pts1) if mask[i][0] == 255 ]
+        available_p2 = [ p for i, p in enumerate(pts2) if mask[i][0] == 255 ]
+        return R, t, F, available_p1, available_p2
 
     def is_close(self, p0, p1):
 
@@ -115,7 +119,7 @@ class LocalPoseEstimator:
         if len(d_list) < MIN_MATCH_COUNT:
             return False
 
-        return np.sort(d_list)[MIN_MATCH_COUNT - 1] < 10.0
+        return np.sort(d_list)[MIN_MATCH_COUNT - 1] < 1.0
 
     def detect_features(self, frame):
         '''detect_features(self, frame) -> keypoints, descrs'''
@@ -183,7 +187,7 @@ if __name__ == '__main__':
     try:
         video_src = sys.argv[1]
     except:
-        video_src = 2
+        video_src = 0
     try:
         route_dir = sys.argv[2]
     except:
