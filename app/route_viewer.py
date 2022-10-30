@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from keyframe_on_route import KeyframeOnRoute
+from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 
 HEADING_SIZE = 0.5
 
@@ -16,20 +16,7 @@ class RouteViewer:
         self.route_line = []
         self.keyframe_directioen_lines = []
         
-
-    #def update(self, keyframes_on_route):
-    def update(self, x, y):
-
-        if self.line:
-            self.scatter.remove()
-            self.line[0].remove()
-
-        self.scatter = self.ax.scatter(x, y, color='blue')
-        self.line = self.ax.plot(x, y, color='blue')
-        plt.draw()
-        plt.pause(0.1)
-
-    def update_dev(self, keyframes_on_route):
+    def update(self, keyframes_on_route):
 
         # remove lines
         [ l.remove() for l in self.route_line ]
@@ -95,4 +82,4 @@ if __name__ == '__main__':
             keyframeOnRoute.pixel_distamce = float(j) / 2 + i
             keyframes.append(keyframeOnRoute)
 
-        routeViewer.update_dev( keyframes )
+        routeViewer.update( keyframes )
