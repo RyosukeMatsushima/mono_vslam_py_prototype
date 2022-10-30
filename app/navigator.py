@@ -4,7 +4,7 @@ from submodule.mono_vslam_py_prototype.app.route_viewer import RouteViewer
 
 MINIMUN_AVAILABLE_KEYFRAMES_NUM = 3
 
-class Navigationr:
+class Navigator:
 
     def __init__(self, route_dir):
         self.img_dir = route_dir
@@ -17,7 +17,12 @@ class Navigationr:
         self.add_next_keyframe()
 
     def get_velocity_and_rotation(self, frame):
+        self.update_keyframes_on_route(frame)
 
+        self.routeViewer.update( self.keyframes_on_route )
+
+        velocity = 0.0
+        rotation = 0.0
         return velocity, rotation
 
     def update_keyframes_on_route(self, frame):
@@ -33,7 +38,6 @@ class Navigationr:
         and not is_keyframe_available[0]:
             self.keyframes_on_route.pop(0)
 
-        self.routeViewer.update( self.keyframes_on_route )
 
     def add_next_keyframe(self):
         new_keyframe = self.get_next_keyframe()
