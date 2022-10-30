@@ -1,3 +1,4 @@
+import numpy as np
 
 from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPoseEstimator
 
@@ -7,12 +8,14 @@ class KeyframeOnRoute:
 
     def __init__(self, keyframe):
 
+        self.keyframe = keyframe.copy()
+
         self.keyframe_yaw = None
         self.yaw_to_keyframe = None
         self.pixel_distance = None
 
         self.localPoseEstimator = LocalPoseEstimator()
-        self.localPoseEstimator.set_keyframe(keyframe)
+        self.localPoseEstimator.set_keyframe(self.keyframe)
 
         self.keyframe_available = False
         self.value_available = False
@@ -29,7 +32,7 @@ class KeyframeOnRoute:
             self.update_available_status(False)
             return
 
-        self.calculate_values(self, p2k)
+        self.calculate_values(p2k)
 
 
     def calculate_values(self, p2k):
@@ -42,6 +45,12 @@ class KeyframeOnRoute:
         self.pixel_distance = p2k.distance
 
 
+    def vector2d_to_angle(self, x, y):
+        alpha  = np.sqrt( 1 / (x**2 + y**2) )
+        sign = 1.0 if y > 0.0 else -1.0
+        return np.arccos(x * alpha) * sign
+
+
     def update_available_status(self, frame_available):
 
         self.value_available = frame_available
@@ -50,7 +59,7 @@ class KeyframeOnRoute:
         self.available_count += v
 
         if self.available_count > AVAILABLE_FRAME_THRESHOLD:
-            self.available = True
+            self.keyframe_available = True
             self.available_count = AVAILABLE_FRAME_THRESHOLD
 
         if self.available_count < 0:

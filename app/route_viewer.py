@@ -3,15 +3,16 @@ import numpy as np
 
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 
-HEADING_SIZE = 0.5
+HEADING_SIZE = 8
+FIG_SIZE = 100
 
 class RouteViewer:
 
     def __init__(self):
         _, self.ax = plt.subplots(1, 1)
 
-        self.ax.set_xlim(-10.0, 10.0)
-        self.ax.set_ylim(-10.0, 10.0)
+        self.ax.set_xlim(-FIG_SIZE, FIG_SIZE)
+        self.ax.set_ylim(-FIG_SIZE, FIG_SIZE)
 
         self.route_line = []
         self.keyframe_directioen_lines = []
@@ -52,12 +53,14 @@ class RouteViewer:
         keyframe_headings = []
 
         for keyframe in keyframes_on_route:
+            if not keyframe.value_available:
+                continue
             keyframe_yaw = keyframe.keyframe_yaw
             yaw_to_keyframe = keyframe.yaw_to_keyframe
-            pixel_distamce = keyframe.pixel_distamce
+            pixel_distance = keyframe.pixel_distance
 
-            keyframe_point = [ pixel_distamce * np.sin( yaw_to_keyframe ),
-                               pixel_distamce * np.cos( yaw_to_keyframe ) ]
+            keyframe_point = [ pixel_distance * np.sin( yaw_to_keyframe ),
+                               pixel_distance * np.cos( yaw_to_keyframe ) ]
             keyframe_heading = [ keyframe_point[0] + HEADING_SIZE * np.sin( keyframe_yaw ),
                                   keyframe_point[1] + HEADING_SIZE * np.cos( keyframe_yaw ) ]
 
@@ -79,7 +82,7 @@ if __name__ == '__main__':
             keyframeOnRoute = KeyframeOnRoute()
             keyframeOnRoute.keyframe_yaw = i
             keyframeOnRoute.yaw_to_keyframe = i + 0.4
-            keyframeOnRoute.pixel_distamce = float(j) / 2 + i
+            keyframeOnRoute.pixel_distance = float(j) / 2 + i
             keyframes.append(keyframeOnRoute)
 
         routeViewer.update( keyframes )

@@ -85,7 +85,7 @@ class LocalPoseEstimator:
         if len(frame_points) < MIN_MATCH_COUNT:
             return None
         matches = self.matcher.knnMatch(frame_descrs, k = 2)
-        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.70]
+        matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.75]
         if len(matches) < MIN_MATCH_COUNT:
             return None
 
