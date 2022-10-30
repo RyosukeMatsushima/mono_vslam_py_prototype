@@ -9,6 +9,9 @@ MINIMUN_AVAILABLE_KEYFRAMES_NUM = 3
 ANGLE_THRESHOLD = 3.1415926 / 180 * 30
 MAX_VELOCITY = 2.0
 
+MAX_ROTATION = 0.5
+ROTATION_GAIN = 0.5
+
 class Navigator:
 
     def __init__(self, route_dir):
@@ -38,7 +41,10 @@ class Navigator:
             velocity = MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) )
 
             if need_stop:
+                rotation = keyframe.keyframe_yaw
                 velocity = 0.0
+
+            rotation = max( -MAX_ROTATION, min( MAX_ROTATION, rotation * ROTATION_GAIN ) )
             break
 
         return velocity, rotation
