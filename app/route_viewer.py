@@ -3,19 +3,20 @@ import numpy as np
 
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 
-HEADING_SIZE = 8
-FIG_SIZE = 100
+HEADING_SIZE = 30
+FIG_SIZE = 300
 
 class RouteViewer:
 
     def __init__(self):
         _, self.ax = plt.subplots(1, 1)
 
-        self.ax.set_xlim(-FIG_SIZE, FIG_SIZE)
-        self.ax.set_ylim(-FIG_SIZE, FIG_SIZE)
+#         self.ax.set_xlim(-FIG_SIZE, FIG_SIZE)
+#         self.ax.set_ylim(-FIG_SIZE, FIG_SIZE)
 
         self.route_line = []
         self.keyframe_directioen_lines = []
+        plt.grid(True)
         
     def update(self, keyframes_on_route):
 
@@ -25,7 +26,7 @@ class RouteViewer:
         self.route_line = []
         self.keyframe_directioen_lines = []
 
-        keyframe_points, keyframe_headings = self.get_points( keyframes_on_route )
+        keyframe_points, keyframe_headings, keyframe_available = self.get_points( keyframes_on_route )
 
         # draw route line
         keyframe_points_x = [ p[0] for p in keyframe_points ]
@@ -36,10 +37,11 @@ class RouteViewer:
                                         color='blue' )
 
         # draw headings
-        for point, heading in zip(keyframe_points, keyframe_headings):
+        for point, heading, available in zip(keyframe_points, keyframe_headings, keyframe_available):
+            color = 'red' if available else 'g'
             line = self.ax.plot( [ point[0], heading[0] ],
                                  [ point[1], heading[1] ],
-                                 color='red' )
+                                 color=color )
 
             self.keyframe_directioen_lines.append( line )
 
@@ -51,13 +53,16 @@ class RouteViewer:
 
         keyframe_points = []
         keyframe_headings = []
+        keyframe_availables = []
 
         for keyframe in keyframes_on_route:
-            if not keyframe.value_available:
-                continue
+
             keyframe_yaw = keyframe.keyframe_yaw
             yaw_to_keyframe = keyframe.yaw_to_keyframe
             pixel_distance = keyframe.pixel_distance
+
+            if not keyframe_yaw or not yaw_to_keyframe or not pixel_distance:
+                continue
 
             keyframe_point = [ pixel_distance * np.sin( yaw_to_keyframe ),
                                pixel_distance * np.cos( yaw_to_keyframe ) ]
@@ -66,8 +71,9 @@ class RouteViewer:
 
             keyframe_points.append( keyframe_point )
             keyframe_headings.append( keyframe_heading )
+            keyframe_availables.append( keyframe.value_available )
 
-        return keyframe_points, keyframe_headings
+        return keyframe_points, keyframe_headings, keyframe_availables
 
 
 

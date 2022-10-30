@@ -36,7 +36,7 @@ flann_params= dict(algorithm = FLANN_INDEX_LSH,
                    key_size = 12,     # 20
                    multi_probe_level = 1) #2
 
-MIN_MATCH_COUNT = 10
+MIN_MATCH_COUNT = 20
 
 '''
   image     - image to track
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     try:
         video_src = sys.argv[1]
     except:
-        video_src = 0
+        video_src = 2
     try:
         route_dir = sys.argv[2]
     except:

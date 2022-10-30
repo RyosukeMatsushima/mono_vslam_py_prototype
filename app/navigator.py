@@ -39,6 +39,7 @@ class Navigator:
         if sum( is_keyframe_available ) > MINIMUN_AVAILABLE_KEYFRAMES_NUM\
         and not is_keyframe_available[0]:
             self.keyframes_on_route.pop(0)
+            print('pop')
 
 
     def add_next_keyframe(self):
@@ -50,7 +51,7 @@ class Navigator:
         next_frame_str = '{}frame_{}.png'.format(self.img_dir, self.next_img_num)
 
         if not os.path.exists(next_frame_str):
-            print('Not find next keyframe.')
+            #print('Not find next keyframe.')
             self.did_finish = True
             return
 
