@@ -53,7 +53,7 @@ KeyframeData = namedtuple('KeyframeData', 'image, keypoints, descrs')
   p1     - matched points coords in input frame
   H      - homography matrix from p0 to p1
 '''
-PoseToKeyframe = namedtuple('PoseToKeyframe', 'pose, p0, p1, is_close')
+PoseToKeyframe = namedtuple('PoseToKeyframe', 'pose, p0, p1, is_close, distance') #TODO: remove is_close
 
 
 class LocalPoseEstimator:
@@ -83,11 +83,11 @@ class LocalPoseEstimator:
         '''Returns a list of detected TrackedTarget objects'''
         frame_points, frame_descrs = self.detect_features(frame)
         if len(frame_points) < MIN_MATCH_COUNT:
-            return []
+            return None
         matches = self.matcher.knnMatch(frame_descrs, k = 2)
         matches = [m[0] for m in matches if len(m) == 2 and m[0].distance < m[1].distance * 0.70]
         if len(matches) < MIN_MATCH_COUNT:
-            return []
+            return None
 
         p0 = [self.keyframe_data.keypoints[m.trainIdx].pt for m in matches]
         p1 = [frame_points[m.queryIdx].pt for m in matches]
@@ -95,9 +95,10 @@ class LocalPoseEstimator:
 
         R, t, F, p0, p1 = self.get_R_t_from_2d_points(p0, p1, 1000)
         if len(p0) < MIN_MATCH_COUNT:
-            return []
+            return None
 
-        p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1, is_close=self.is_close(p0, p1))
+        distance = self.distance(p0, p1)
+        p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1, is_close=distance < 1.0, distance=distance)
         return p2k
 
     def get_R_t_from_2d_points(self, pts1, pts2, focal):
@@ -109,7 +110,7 @@ class LocalPoseEstimator:
         available_p2 = [ p for i, p in enumerate(pts2) if mask[i][0] == 255 ]
         return R, t, F, available_p1, available_p2
 
-    def is_close(self, p0, p1):
+    def distance(self, p0, p1):
 
         p0 = np.array(p0)
         p1 = np.array(p1)
@@ -119,7 +120,9 @@ class LocalPoseEstimator:
         if len(d_list) < MIN_MATCH_COUNT:
             return False
 
-        return np.sort(d_list)[MIN_MATCH_COUNT - 1] < 1.0
+        distance = np.sort(d_list)[MIN_MATCH_COUNT - 1]
+
+        return distance
 
     def detect_features(self, frame):
         '''detect_features(self, frame) -> keypoints, descrs'''
