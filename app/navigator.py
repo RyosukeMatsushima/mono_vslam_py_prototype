@@ -6,6 +6,9 @@ from submodule.mono_vslam_py_prototype.app.route_viewer import RouteViewer
 
 MINIMUN_AVAILABLE_KEYFRAMES_NUM = 3
 
+ANGLE_THRESHOLD = 3.1415926 / 180 * 30
+MAX_VELOCITY = 2.0
+
 class Navigator:
 
     def __init__(self, route_dir):
@@ -25,6 +28,19 @@ class Navigator:
 
         velocity = 0.0
         rotation = 0.0
+        for keyframe in reversed(self.keyframes_on_route):
+            if not keyframe.value_available:
+                continue
+
+            need_stop = abs(keyframe.yaw_to_keyframe) > ANGLE_THRESHOLD
+
+            rotation = keyframe.keyframe_yaw - keyframe.yaw_to_keyframe
+            velocity = MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) )
+
+            if need_stop:
+                velocity = 0.0
+            break
+
         return velocity, rotation
 
     def update_keyframes_on_route(self, frame):
