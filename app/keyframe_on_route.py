@@ -3,6 +3,7 @@ import numpy as np
 from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPoseEstimator
 
 AVAILABLE_FRAME_THRESHOLD = 10
+AVERAGE_RANGE = 5
 
 class KeyframeOnRoute:
 
@@ -13,6 +14,10 @@ class KeyframeOnRoute:
         self.keyframe_yaw = None
         self.yaw_to_keyframe = None
         self.pixel_distance = None
+
+        self.keyframe_yaw_filter = AverageFilter(AVERAGE_RANGE)
+        self.yaw_to_keyframe_filter = AverageFilter(AVERAGE_RANGE)
+        self.pixel_distance_filter = AverageFilter(AVERAGE_RANGE)
 
         self.localPoseEstimator = LocalPoseEstimator()
         self.localPoseEstimator.set_keyframe(self.keyframe)
@@ -38,11 +43,11 @@ class KeyframeOnRoute:
     def calculate_values(self, p2k):
         rotation_matrix = np.array(p2k.pose[0])
         frame_Z = rotation_matrix @ np.array([0, 0, 1])
-        self.keyframe_yaw = self.vector2d_to_angle(frame_Z[2], frame_Z[0])
-
         keyframe_direction = np.array(p2k.pose[1]).T[0]
-        self.yaw_to_keyframe = self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] )
-        self.pixel_distance = p2k.distance
+
+        self.keyframe_yaw = self.keyframe_yaw_filter.update( self.vector2d_to_angle(frame_Z[2], frame_Z[0]) )
+        self.yaw_to_keyframe = self.yaw_to_keyframe_filter.update( self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] ) )
+        self.pixel_distance = self.pixel_distance_filter.update( p2k.distance )
 
 
     def vector2d_to_angle(self, x, y):
@@ -65,4 +70,18 @@ class KeyframeOnRoute:
         if self.available_count < 0:
             self.keyframe_available = False
             self.available_count = 0
+
+class AverageFilter:
+
+    def __init__(self, average_range):
+        self.average_range = average_range
+        self.values = []
+
+    def update(self, value):
+
+        self.values.append( value )
+        if len(self.values) > self.average_range:
+            self.values.pop(0)
+
+        return sum(self.values) / len(self.values)
 
