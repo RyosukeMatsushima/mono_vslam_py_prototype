@@ -22,7 +22,7 @@ class RouteRegister:
         self.last_frame.update(frame)
 
         if self.last_frame.value_available:
-            if self.last_frame.pixel_distance > PIX_DISTNCE_THRESHOLD:
+            if self.last_frame.pixel_distance.value() > PIX_DISTNCE_THRESHOLD:
                 self.regist_frame(frame)
 
     def regist_frame(self, frame):

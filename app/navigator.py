@@ -3,7 +3,7 @@ import cv2 as cv
 
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 from submodule.mono_vslam_py_prototype.app.route_viewer import RouteViewer
-from submodule.mono_vslam_py_prototype.app.average_filter import AverageFilter
+from submodule.mono_vslam_py_prototype.app.average_value import AverageValue
 
 MINIMUN_AVAILABLE_KEYFRAMES_NUM = 2
 MAXMUN_AVAILABLE_KEYFRAMES_NUM = 3
@@ -24,7 +24,7 @@ class Navigator:
         self.keyframes_on_route = []
         self.routeViewer = RouteViewer()
 
-        self.velocityAverageFilter = AverageFilter(5)
+        self.velocity = AverageValue(5)
 
         self.add_next_keyframe()
 
@@ -39,14 +39,15 @@ class Navigator:
             if not keyframe.value_available:
                 continue
 
-            need_stop = abs(keyframe.yaw_to_keyframe) > ANGLE_THRESHOLD
+            need_stop = abs(keyframe.yaw_to_keyframe.value()) > ANGLE_THRESHOLD
 
-            rotation = keyframe.keyframe_yaw - keyframe.yaw_to_keyframe
-            velocity = self.velocityAverageFilter.update( MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) ) )
+            rotation = keyframe.keyframe_yaw.value() - keyframe.yaw_to_keyframe.value()
+            self.velocity.update( MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) ) )
+            velocity = self.velocity.value()
 
             if need_stop:
-                rotation = keyframe.keyframe_yaw
-                self.velocityAverageFilter.reset()
+                rotation = keyframe.keyframe_yaw.value()
+                self.velocity.reset()
                 velocity = 0.0
 
             rotation = max( -MAX_ROTATION, min( MAX_ROTATION, rotation * ROTATION_GAIN ) )
@@ -67,7 +68,7 @@ class Navigator:
             if not is_keyframe_available[0]:
                 self.keyframes_on_route.pop(0)
                 print('pop')
-            elif abs( self.keyframes_on_route[0].yaw_to_keyframe ) > ANGLE_THRESHOLD:
+            elif abs( self.keyframes_on_route[0].yaw_to_keyframe.value() ) > ANGLE_THRESHOLD:
                 self.keyframes_on_route.pop(0)
                 print('pop')
 

@@ -60,9 +60,9 @@ class RouteViewer:
 
         for keyframe in keyframes_on_route:
 
-            keyframe_yaw = keyframe.keyframe_yaw
-            yaw_to_keyframe = keyframe.yaw_to_keyframe
-            pixel_distance = keyframe.pixel_distance
+            keyframe_yaw = keyframe.keyframe_yaw.value()
+            yaw_to_keyframe = keyframe.yaw_to_keyframe.value()
+            pixel_distance = keyframe.pixel_distance.value()
 
             if not keyframe_yaw or not yaw_to_keyframe or not pixel_distance:
                 continue
