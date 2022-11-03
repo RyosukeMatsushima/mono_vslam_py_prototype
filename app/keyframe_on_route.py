@@ -1,6 +1,7 @@
 import numpy as np
 
 from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPoseEstimator
+from submodule.mono_vslam_py_prototype.app.average_filter import AverageFilter
 
 AVAILABLE_FRAME_THRESHOLD = 10
 AVERAGE_RANGE = 5
@@ -73,18 +74,4 @@ class KeyframeOnRoute:
         if self.available_count < 0:
             self.keyframe_available = False
             self.available_count = 0
-
-class AverageFilter:
-
-    def __init__(self, average_range):
-        self.average_range = average_range
-        self.values = []
-
-    def update(self, value):
-
-        self.values.append( value )
-        if len(self.values) > self.average_range:
-            self.values.pop(0)
-
-        return sum(self.values) / len(self.values)
 

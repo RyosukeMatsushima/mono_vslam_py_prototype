@@ -3,12 +3,13 @@ import cv2 as cv
 
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 from submodule.mono_vslam_py_prototype.app.route_viewer import RouteViewer
+from submodule.mono_vslam_py_prototype.app.average_filter import AverageFilter
 
 MINIMUN_AVAILABLE_KEYFRAMES_NUM = 2
 MAXMUN_AVAILABLE_KEYFRAMES_NUM = 3
 
 ANGLE_THRESHOLD = 3.1415926 / 180 * 30
-MAX_VELOCITY = 2.0
+MAX_VELOCITY = 1.0
 
 MAX_ROTATION = 0.5
 ROTATION_GAIN = 0.5
@@ -22,6 +23,8 @@ class Navigator:
 
         self.keyframes_on_route = []
         self.routeViewer = RouteViewer()
+
+        self.velocityAverageFilter = AverageFilter(5)
 
         self.add_next_keyframe()
 
@@ -39,10 +42,11 @@ class Navigator:
             need_stop = abs(keyframe.yaw_to_keyframe) > ANGLE_THRESHOLD
 
             rotation = keyframe.keyframe_yaw - keyframe.yaw_to_keyframe
-            velocity = MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) )
+            velocity = self.velocityAverageFilter.update( MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) ) )
 
             if need_stop:
                 rotation = keyframe.keyframe_yaw
+                self.velocityAverageFilter.reset()
                 velocity = 0.0
 
             rotation = max( -MAX_ROTATION, min( MAX_ROTATION, rotation * ROTATION_GAIN ) )
