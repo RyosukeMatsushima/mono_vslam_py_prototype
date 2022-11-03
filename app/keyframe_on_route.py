@@ -9,7 +9,7 @@ class KeyframeOnRoute:
 
     def __init__(self, keyframe):
 
-        self.keyframe = keyframe.copy()
+        self.keyframe = keyframe
 
         self.keyframe_yaw = None
         self.yaw_to_keyframe = None

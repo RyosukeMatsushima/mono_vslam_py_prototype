@@ -37,8 +37,11 @@ class RouteViewer:
                                         color='blue' )
 
         # draw headings
+        count = 0
         for point, heading, available in zip(keyframe_points, keyframe_headings, keyframe_available):
             color = 'red' if available else 'g'
+            color = 'b' if count == 0 else color
+            count += 1
             line = self.ax.plot( [ point[0], heading[0] ],
                                  [ point[1], heading[1] ],
                                  color=color )

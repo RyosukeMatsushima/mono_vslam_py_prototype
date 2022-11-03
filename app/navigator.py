@@ -4,7 +4,8 @@ import cv2 as cv
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 from submodule.mono_vslam_py_prototype.app.route_viewer import RouteViewer
 
-MINIMUN_AVAILABLE_KEYFRAMES_NUM = 3
+MINIMUN_AVAILABLE_KEYFRAMES_NUM = 2
+MAXMUN_AVAILABLE_KEYFRAMES_NUM = 3
 
 ANGLE_THRESHOLD = 3.1415926 / 180 * 30
 MAX_VELOCITY = 2.0
@@ -31,7 +32,7 @@ class Navigator:
 
         velocity = 0.0
         rotation = 0.0
-        for keyframe in reversed(self.keyframes_on_route):
+        for keyframe in self.keyframes_on_route:
             if not keyframe.value_available:
                 continue
 
@@ -52,17 +53,19 @@ class Navigator:
     def update_keyframes_on_route(self, frame):
 
         # add new keyframe
-        if self.keyframes_on_route[-1].keyframe_available:
+        if len(self.keyframes_on_route) < MAXMUN_AVAILABLE_KEYFRAMES_NUM:
             self.add_next_keyframe()
 
         [ keyframe.update(frame) for keyframe in self.keyframes_on_route ]
         is_keyframe_available = [ keyframe.keyframe_available for keyframe in self.keyframes_on_route ]
 
-        if sum( is_keyframe_available ) > MINIMUN_AVAILABLE_KEYFRAMES_NUM\
-        and not is_keyframe_available[0]:
-            self.keyframes_on_route.pop(0)
-            print('pop')
-
+        if sum( is_keyframe_available ) > MINIMUN_AVAILABLE_KEYFRAMES_NUM:
+            if not is_keyframe_available[0]:
+                self.keyframes_on_route.pop(0)
+                print('pop')
+            elif abs( self.keyframes_on_route[0].yaw_to_keyframe ) > ANGLE_THRESHOLD:
+                self.keyframes_on_route.pop(0)
+                print('pop')
 
     def add_next_keyframe(self):
         new_keyframe = self.get_next_keyframe()
