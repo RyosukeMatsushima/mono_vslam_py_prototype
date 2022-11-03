@@ -15,7 +15,7 @@ class AverageValue:
             self.values.pop(0)
 
         self.average = sum(self.values) / len(self.values)
-        self.variance = sum( [ abs( value - self.average ) for value in self.values ] )
+        self.variance = sum( [ abs( value - self.average ) for value in self.values ] ) / len(self.values)
 
     def value(self):
         return self.average
