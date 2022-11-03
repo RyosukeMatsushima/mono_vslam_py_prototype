@@ -26,6 +26,8 @@ class KeyframeOnRoute:
         self.value_available = False
         self.available_count = 0
 
+        self.last_p2k = None
+
 
     def update(self, frame):
 
@@ -38,6 +40,7 @@ class KeyframeOnRoute:
             return
 
         self.calculate_values(p2k)
+        self.last_p2k = p2k
 
 
     def calculate_values(self, p2k):
