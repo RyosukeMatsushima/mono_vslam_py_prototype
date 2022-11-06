@@ -17,13 +17,16 @@ ROTATION_GAIN = 0.5
 
 class Navigator:
 
-    def __init__(self, route_dir):
+    def __init__(self, route_dir, debug=False):
         self.img_dir = route_dir
         self.next_img_num = 0
         self.did_finish = False
 
         self.keyframes_on_route = []
-        self.routeViewer = RouteViewer()
+
+        self.debug = debug
+        if self.debug:
+            self.routeViewer = RouteViewer()
 
         self.velocity = AverageValue(5)
 
@@ -39,7 +42,9 @@ class Navigator:
     def get_velocity_and_rotation(self, frame):
 
         [ keyframe.update(frame) for keyframe in self.keyframes_on_route ]
-        self.routeViewer.update( self.keyframes_on_route )
+
+        if self.debug:
+            self.routeViewer.update( self.keyframes_on_route )
 
         velocity = 0.0
         rotation = 0.0
