@@ -190,7 +190,7 @@ if __name__ == '__main__':
     try:
         video_src = sys.argv[1]
     except:
-        video_src = 2
+        video_src = 0
     try:
         route_dir = sys.argv[2]
     except:

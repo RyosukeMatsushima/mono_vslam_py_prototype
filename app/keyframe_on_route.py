@@ -3,8 +3,8 @@ import numpy as np
 from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPoseEstimator
 from submodule.mono_vslam_py_prototype.app.average_value import AverageValue
 
-AVAILABLE_FRAME_THRESHOLD = 10
-AVERAGE_RANGE = 5
+AVAILABLE_FRAME_THRESHOLD = 3
+AVERAGE_RANGE = 3
 
 class KeyframeOnRoute:
 
@@ -45,8 +45,9 @@ class KeyframeOnRoute:
         frame_Z = rotation_matrix @ np.array([0, 0, 1])
         keyframe_direction = np.array(p2k.pose[1]).T[0]
 
-        self.keyframe_yaw.update( self.vector2d_to_angle(frame_Z[2], frame_Z[0]) )
-        self.yaw_to_keyframe.update( self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] ) )
+        keyframe_yaw = self.vector2d_to_angle(frame_Z[2], frame_Z[0])
+        self.keyframe_yaw.update( keyframe_yaw )
+        self.yaw_to_keyframe.update( self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] ) + keyframe_yaw )
         self.pixel_distance.update( p2k.distance )
 
 
@@ -66,6 +67,7 @@ class KeyframeOnRoute:
         if self.available_count > AVAILABLE_FRAME_THRESHOLD:
             self.keyframe_available = True
             self.available_count = AVAILABLE_FRAME_THRESHOLD
+            return
 
         if self.available_count < 0:
             self.keyframe_available = False
