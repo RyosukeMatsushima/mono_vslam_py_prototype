@@ -9,11 +9,12 @@ MINIMUN_AVAILABLE_KEYFRAMES_NUM = 1
 MAXMUN_AVAILABLE_KEYFRAMES_NUM = 2
 PIXEL_DISTANCE_THRESHOLD = 20
 
-ANGLE_THRESHOLD = 3.1415926 / 180 * 30
-MAX_VELOCITY = 1.0
+ANGLE_THRESHOLD = 3.1415926 / 180 * 45
+MAX_VELOCITY = 0.3
 
-MAX_ROTATION = 0.5
-ROTATION_GAIN = 0.5
+VELOCITY_FOR_ROTATION = 0.10
+ROTATION_GAIN = -0.5
+MAX_ROTATION = 0.15
 
 class Navigator:
 
@@ -63,9 +64,11 @@ class Navigator:
             if self.keyframes_on_route[0].value_available:
                 rotation = self.keyframes_on_route[0].keyframe_yaw.value()
             self.velocity.reset()
+            self.velocity.update( VELOCITY_FOR_ROTATION )
+            velocity = self.velocity.value()
         else:
             rotation = self.keyframes_on_route[0].yaw_to_keyframe.value()
-            self.velocity.update( MAX_VELOCITY * max( 0.0, ( 1 - abs( rotation ) / ANGLE_THRESHOLD ) ) )
+            self.velocity.update( MAX_VELOCITY )
             velocity = self.velocity.value()
 
         rotation = max( -MAX_ROTATION, min( MAX_ROTATION, rotation * ROTATION_GAIN ) )
