@@ -63,6 +63,10 @@ class LocalPoseEstimator:
         self.matcher = cv.FlannBasedMatcher(flann_params, {})  # bug : need to pass empty dict (#1329)
         self.keyframe_data = None
 
+        self.camera_mat = np.array([[800.24698687, 0., 333.78559317],
+                                    [  0., 793.18245069, 224.15778875],
+                                    [  0., 0., 1.]])
+
     def set_keyframe(self, frame):
         self.matcher.clear()
         raw_points, raw_descrs = self.detect_features(frame)
@@ -93,7 +97,7 @@ class LocalPoseEstimator:
         p1 = [frame_points[m.queryIdx].pt for m in matches]
         p0, p1 = np.float32((p0, p1))
 
-        R, t, F, p0, p1 = self.get_R_t_from_2d_points(p0, p1, 1000)
+        R, t, F, p0, p1 = self.get_R_t_from_2d_points(p0, p1)
         if len(p0) < MIN_MATCH_COUNT:
             return None
 
@@ -101,11 +105,11 @@ class LocalPoseEstimator:
         p2k = PoseToKeyframe(pose=[R, t], p0=p0, p1=p1, is_close=distance < 1.0, distance=distance)
         return p2k
 
-    def get_R_t_from_2d_points(self, pts1, pts2, focal):
-        F, mask = cv.findEssentialMat(pts1, pts2, focal=focal, pp=(0.0, 0.0), method=cv.RANSAC, prob=0.999, threshold=1.0)
+    def get_R_t_from_2d_points(self, pts1, pts2):
+        F, mask = cv.findEssentialMat(pts1, pts2, cameraMatrix=self.camera_mat, method=cv.RANSAC, prob=0.999, threshold=1.0)
         pts1 = pts1[mask.ravel()==1]
         pts2 = pts2[mask.ravel()==1]
-        retval, R, t, mask = cv.recoverPose(F, pts1, pts2, focal=focal)
+        retval, R, t, mask = cv.recoverPose(F, pts1, pts2, cameraMatrix=self.camera_mat)
         available_p1 = [ p for i, p in enumerate(pts1) if mask[i][0] == 255 ]
         available_p2 = [ p for i, p in enumerate(pts2) if mask[i][0] == 255 ]
         return R, t, F, available_p1, available_p2

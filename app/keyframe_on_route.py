@@ -47,12 +47,12 @@ class KeyframeOnRoute:
 
         keyframe_yaw = self.vector2d_to_angle(frame_Z[2], frame_Z[0])
         self.keyframe_yaw.update( keyframe_yaw )
-        self.yaw_to_keyframe.update( self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] ) + keyframe_yaw )
+        self.yaw_to_keyframe.update( self.vector2d_to_angle( keyframe_direction[2], keyframe_direction[0] ) - keyframe_yaw )
         self.pixel_distance.update( p2k.distance )
 
 
     def vector2d_to_angle(self, x, y):
-        alpha  = np.sqrt( 1 / (x**2 + y**2) )
+        alpha  = np.sqrt( 1.0 / (x**2 + y**2) )
         sign = 1.0 if y > 0.0 else -1.0
         return np.arccos(x * alpha) * sign
 
