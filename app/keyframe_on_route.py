@@ -8,7 +8,7 @@ AVERAGE_RANGE = 3
 
 class KeyframeOnRoute:
 
-    def __init__(self, keyframe):
+    def __init__(self, keyframe, path_to_camera_mat):
 
         self.keyframe = keyframe
 
@@ -16,7 +16,7 @@ class KeyframeOnRoute:
         self.yaw_to_keyframe = AverageValue(AVERAGE_RANGE)
         self.pixel_distance = AverageValue(AVERAGE_RANGE)
 
-        self.localPoseEstimator = LocalPoseEstimator()
+        self.localPoseEstimator = LocalPoseEstimator(path_to_camera_mat)
         self.localPoseEstimator.set_keyframe(self.keyframe)
 
         self.keyframe_available = False

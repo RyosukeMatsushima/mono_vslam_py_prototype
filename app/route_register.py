@@ -7,11 +7,12 @@ PIX_DISTNCE_THRESHOLD = 40
 
 class RouteRegister:
 
-    def __init__(self, route_dir):
+    def __init__(self, route_dir, path_to_camera_mat):
         self.img_dir = route_dir
         self.img_num = 0
 
         self.last_frame = None
+        self.path_to_camera_mat = path_to_camera_mat
 
     def update_frame(self, frame):
 
@@ -31,6 +32,6 @@ class RouteRegister:
         cv.imwrite(path, frame)
         self.img_num += 1
 
-        self.last_frame = KeyframeOnRoute(frame)
+        self.last_frame = KeyframeOnRoute(frame, self.path_to_camera_mat)
      
 

@@ -18,8 +18,9 @@ MAX_ROTATION = 0.15
 
 class Navigator:
 
-    def __init__(self, route_dir, debug=False):
+    def __init__(self, route_dir, path_to_camera_mat, debug=False):
         self.img_dir = route_dir
+        self.path_to_camera_mat = path_to_camera_mat
         self.next_img_num = 0
         self.did_finish = False
 
@@ -99,7 +100,7 @@ class Navigator:
     def add_next_keyframe(self):
         new_keyframe = self.get_next_keyframe()
         if new_keyframe is not None:
-            self.keyframes_on_route.append( KeyframeOnRoute( new_keyframe ) )
+            self.keyframes_on_route.append( KeyframeOnRoute( new_keyframe, self.path_to_camera_mat ) )
             return True
         else:
             return False

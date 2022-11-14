@@ -58,14 +58,12 @@ PoseToKeyframe = namedtuple('PoseToKeyframe', 'pose, p0, p1, is_close, distance'
 
 class LocalPoseEstimator:
 
-    def __init__(self):
+    def __init__(self, path_to_camera_mat):
         self.detector = cv.ORB_create( nfeatures = 1000 )
         self.matcher = cv.FlannBasedMatcher(flann_params, {})  # bug : need to pass empty dict (#1329)
         self.keyframe_data = None
 
-        self.camera_mat = np.array([[800.24698687, 0., 333.78559317],
-                                    [  0., 793.18245069, 224.15778875],
-                                    [  0., 0., 1.]])
+        self.camera_mat = np.load(path_to_camera_mat)
 
     def set_keyframe(self, frame):
         self.matcher.clear()
