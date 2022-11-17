@@ -4,7 +4,7 @@ from submodule.mono_vslam_py_prototype.app.local_pose_estimator import LocalPose
 from submodule.mono_vslam_py_prototype.app.average_value import AverageValue
 
 AVAILABLE_FRAME_THRESHOLD = 3
-AVERAGE_RANGE = 3
+AVERAGE_RANGE = 1
 
 class KeyframeOnRoute:
 

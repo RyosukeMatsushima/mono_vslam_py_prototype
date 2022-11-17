@@ -3,7 +3,7 @@ import cv2 as cv
 
 from submodule.mono_vslam_py_prototype.app.keyframe_on_route import KeyframeOnRoute
 
-PIX_DISTNCE_THRESHOLD = 40
+PIX_DISTNCE_THRESHOLD = 5
 
 class RouteRegister:
 
